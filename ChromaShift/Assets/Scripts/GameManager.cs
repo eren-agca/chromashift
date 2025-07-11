@@ -3,7 +3,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    public UIManager uiManager; // Inspector’dan atayacaksın!
+    public UIManager uiManager;
 
     void Awake()
     {
@@ -22,5 +22,11 @@ public class GameManager : MonoBehaviour
     {
         if (uiManager != null)
             uiManager.ShowGameFinishedPanel();
+    }
+
+    public void GameOver()
+    {
+        if (uiManager != null)
+            uiManager.ShowYouDiedPanel();
     }
 }

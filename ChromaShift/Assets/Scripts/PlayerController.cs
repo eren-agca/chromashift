@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
+
 public enum PlayerColor
 {
     Red,
@@ -15,9 +16,10 @@ public class PlayerController : MonoBehaviour
     public float movementDeadzone = 0.12f;
     public PlayerColor currentColor = PlayerColor.Red;
 
-    // Tilemap Collider 2D referansları (Inspector’dan atayacaksın)
     public TilemapCollider2D redwallCollider;
     public TilemapCollider2D bluewallCollider;
+
+    [HideInInspector] public bool hasKey = false;
 
     private SpriteRenderer spriteRenderer;
     private Animator animator;
@@ -32,8 +34,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        float horizontalInput = joystick.Horizontal;
-        float verticalInput = joystick.Vertical;
+        float horizontalInput = joystick != null ? joystick.Horizontal : 0f;
+        float verticalInput = joystick != null ? joystick.Vertical : 0f;
         Vector2 direction = new Vector2(horizontalInput, verticalInput);
 
         if (direction.magnitude < movementDeadzone)
@@ -71,47 +73,59 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateColor()
     {
-        if (currentColor == PlayerColor.Red)
-            spriteRenderer.color = Color.red;
-        else if (currentColor == PlayerColor.Blue)
-            spriteRenderer.color = Color.blue;
+        if (spriteRenderer != null)
+        {
+            if (currentColor == PlayerColor.Red)
+                spriteRenderer.color = Color.red;
+            else if (currentColor == PlayerColor.Blue)
+                spriteRenderer.color = Color.blue;
+        }
     }
 
     private void UpdateWallColliders()
     {
         if (redwallCollider != null)
             redwallCollider.enabled = (currentColor != PlayerColor.Red);
-
         if (bluewallCollider != null)
             bluewallCollider.enabled = (currentColor != PlayerColor.Blue);
     }
 
-    // İskeletle çarpışınca aynı renkteyse yok olur, farklıysa oyun biter
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // Anahtar kontrolü
+        if (other.GetComponent<KeyController>() != null)
+        {
+            hasKey = true;
+            Destroy(other.gameObject);
+            if (UIManager.Instance != null)
+                UIManager.Instance.ShowKeyIcon();
+            return;
+        }
+
+        // Düşman (iskelet) kontrolü
         SkeletonEnemy skeleton = other.GetComponent<SkeletonEnemy>();
         if (skeleton != null)
         {
             var skeletonRenderer = skeleton.GetComponent<SpriteRenderer>();
             if (skeletonRenderer != null)
             {
-                // Renk karşılaştırmasını RGB ile yapıyoruz:
                 Color playerColor = (currentColor == PlayerColor.Red) ? Color.red : Color.blue;
                 if (Approximately(playerColor, skeletonRenderer.color))
                 {
-                    Debug.Log("Aynı renk, iskelet yok oldu!");
                     skeleton.Disappear();
                 }
                 else
                 {
-                    Debug.Log("Farklı renk: OYUN BİTTİ!");
-                    GameManager.Instance.GameFinished();
+                    // Sadece Level3'te ölüm paneli göster
+                    if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Level3")
+                        GameManager.Instance.GameOver();
+                    else
+                        GameManager.Instance.GameOver(); // İstersen farklı panel açabilirsin
                 }
             }
         }
     }
 
-    // Renkleri float hassasiyetine karşılaştırmak için yardımcı fonksiyon:
     private bool Approximately(Color a, Color b)
     {
         return Mathf.Approximately(a.r, b.r) &&
