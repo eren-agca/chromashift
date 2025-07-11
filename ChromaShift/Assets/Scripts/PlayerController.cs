@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
-
 public enum PlayerColor
 {
     Red,
@@ -16,8 +15,9 @@ public class PlayerController : MonoBehaviour
     public float movementDeadzone = 0.12f;
     public PlayerColor currentColor = PlayerColor.Red;
 
-    public TilemapCollider2D redWallCollider;
-    public TilemapCollider2D blueWallCollider;
+    // Tilemap Collider 2D referansları (Inspector’dan atayacaksın)
+    public TilemapCollider2D redwallCollider;
+    public TilemapCollider2D bluewallCollider;
 
     private SpriteRenderer spriteRenderer;
     private Animator animator;
@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         UpdateColor();
-        UpdateWallColliders(); // Başlangıçta doğru collider aktif olsun
+        UpdateWallColliders();
     }
 
     void Update()
@@ -77,12 +77,45 @@ public class PlayerController : MonoBehaviour
             spriteRenderer.color = Color.blue;
     }
 
-    // En doğru yöntem: Collider'ı devre dışı bırakmak!
     private void UpdateWallColliders()
     {
-        if (redWallCollider != null)
-            redWallCollider.enabled = (currentColor != PlayerColor.Red);  // Kırmızıdaysa kırmızı duvar yokmuş gibi olur
-        if (blueWallCollider != null)
-            blueWallCollider.enabled = (currentColor != PlayerColor.Blue); // Maviyse mavi duvar yokmuş gibi olur
+        if (redwallCollider != null)
+            redwallCollider.enabled = (currentColor != PlayerColor.Red);
+
+        if (bluewallCollider != null)
+            bluewallCollider.enabled = (currentColor != PlayerColor.Blue);
+    }
+
+    // İskeletle çarpışınca aynı renkteyse yok olur, farklıysa oyun biter
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        SkeletonEnemy skeleton = other.GetComponent<SkeletonEnemy>();
+        if (skeleton != null)
+        {
+            var skeletonRenderer = skeleton.GetComponent<SpriteRenderer>();
+            if (skeletonRenderer != null)
+            {
+                // Renk karşılaştırmasını RGB ile yapıyoruz:
+                Color playerColor = (currentColor == PlayerColor.Red) ? Color.red : Color.blue;
+                if (Approximately(playerColor, skeletonRenderer.color))
+                {
+                    Debug.Log("Aynı renk, iskelet yok oldu!");
+                    skeleton.Disappear();
+                }
+                else
+                {
+                    Debug.Log("Farklı renk: OYUN BİTTİ!");
+                    GameManager.Instance.GameFinished();
+                }
+            }
+        }
+    }
+
+    // Renkleri float hassasiyetine karşılaştırmak için yardımcı fonksiyon:
+    private bool Approximately(Color a, Color b)
+    {
+        return Mathf.Approximately(a.r, b.r) &&
+               Mathf.Approximately(a.g, b.g) &&
+               Mathf.Approximately(a.b, b.b);
     }
 }

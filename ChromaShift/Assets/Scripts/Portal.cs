@@ -1,15 +1,20 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Portal : MonoBehaviour
 {
-    public string nextLevelName = "Level2"; // Inspector’dan düzenleyebilirsin
-
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player")) // Player objesinin tag’ı “Player” olmalı
+        if (other.CompareTag("Player"))
         {
-            SceneManager.LoadScene(nextLevelName);
+            var currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (currentScene == "Level3") // 3. levelde oyunu bitir
+            {
+                GameManager.Instance.GameFinished();
+            }
+            else
+            {
+                GameManager.Instance.LevelComplete();
+            }
         }
     }
 }
