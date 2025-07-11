@@ -93,7 +93,7 @@ public class UIManager : MonoBehaviour
     public void Button_GoToLevelSelect()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("LevelSelect");
+        SceneManager.LoadScene("LevelSelectMenu");
     }
 
     public void Button_GoToNextLevel()

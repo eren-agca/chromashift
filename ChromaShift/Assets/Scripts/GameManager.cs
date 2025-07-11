@@ -14,6 +14,15 @@ public class GameManager : MonoBehaviour
 
     public void LevelComplete()
     {
+        int currentLevelIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+        int nextLevelIndex = currentLevelIndex + 1;
+
+        if (PlayerPrefs.GetInt("LevelUnlocked", 1) < nextLevelIndex)
+        {
+            PlayerPrefs.SetInt("LevelUnlocked", nextLevelIndex);
+            PlayerPrefs.Save(); // Burası önemli!
+        }
+
         if (uiManager != null)
             uiManager.ShowLevelCompletePanel();
     }
@@ -28,5 +37,12 @@ public class GameManager : MonoBehaviour
     {
         if (uiManager != null)
             uiManager.ShowYouDiedPanel();
+    }
+
+    // TEST için bir butona bu fonksiyonu bağlayabilirsin:
+    public void ResetProgress()
+    {
+        PlayerPrefs.DeleteKey("LevelUnlocked");
+        PlayerPrefs.Save();
     }
 }

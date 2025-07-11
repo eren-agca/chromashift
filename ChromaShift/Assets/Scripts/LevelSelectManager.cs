@@ -1,72 +1,81 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using TMPro;
-using System.Collections.Generic;
-
-[System.Serializable]
-public class LevelSlot
-{
-    [Tooltip("Bu slotun temsil ettiği seviyenin Build Index'i")]
-    public int levelIndex;
-    [Tooltip("Tıklanacak olan asıl Buton component'i")]
-    public Button button;
-    [Tooltip("Kilitli olduğunda gösterilecek olan ikon")]
-    public GameObject lockIcon;
-    [Tooltip("Seviye numarasını gösteren TextMeshPro objesi")]
-    public TextMeshProUGUI levelText;
-}
+using UnityEngine.SceneManagement;
 
 public class LevelSelectManager : MonoBehaviour
 {
-    [Header("Seviye Slotları")]
-    [Tooltip("Her bir seviye için UI elemanlarını buraya sürükleyin")]
-    public List<LevelSlot> levelSlots = new List<LevelSlot>();
+    void OnEnable() { UpdateLevelButtons(); }
+    void Start()    { UpdateLevelButtons(); }
 
-    void Start()
+    void UpdateLevelButtons()
     {
-        int highestLevelReached = PlayerPrefs.GetInt("highestLevelReached", 1);
-        Debug.Log($"Oyuncunun ulaştığı en yüksek seviye: {highestLevelReached}");
+        int unlockedLevel = PlayerPrefs.GetInt("LevelUnlocked", 1);
 
-        foreach (var slot in levelSlots)
+        Button[] buttons = GetComponentsInChildren<Button>(true);
+
+        foreach (Button btn in buttons)
         {
-            if (slot.levelText != null)
+            string label = "";
+            TMP_Text tmpText = btn.GetComponentInChildren<TMP_Text>();
+            if (tmpText != null)
+                label = tmpText.text.Trim();
+            else
             {
-                slot.levelText.text = slot.levelIndex.ToString();
+                Text classicText = btn.GetComponentInChildren<Text>();
+                if (classicText != null)
+                    label = classicText.text.Trim();
             }
 
-            if (slot.levelIndex <= highestLevelReached)
+            int levelNum = 0;
+            if (int.TryParse(label, out levelNum))
             {
-                UnlockSlot(slot);
+                bool isUnlocked = (levelNum <= unlockedLevel);
+                btn.interactable = isUnlocked;
+
+                // İsmi "lock" (küçük l) içeren tüm image objelerini aç/kapat
+                Image[] childImages = btn.GetComponentsInChildren<Image>(true);
+                foreach (var img in childImages)
+                {
+                    if (img.gameObject.name.ToLower().Contains("lock"))
+                        img.gameObject.SetActive(!isUnlocked);
+                }
             }
             else
             {
-                LockSlot(slot);
+                btn.interactable = false;
+                Image[] childImages = btn.GetComponentsInChildren<Image>(true);
+                foreach (var img in childImages)
+                {
+                    if (img.gameObject.name.ToLower().Contains("lock"))
+                        img.gameObject.SetActive(true);
+                }
             }
+
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => LoadLevelFromButton(btn));
         }
     }
 
-    private void LockSlot(LevelSlot slot)
+    public void LoadLevelFromButton(Button btn)
     {
-        if (slot.button != null) slot.button.interactable = false;
-        if (slot.lockIcon != null) slot.lockIcon.SetActive(true);
-    }
-
-    private void UnlockSlot(LevelSlot slot)
-    {
-        if (slot.button != null)
+        string label = "";
+        TMP_Text tmpText = btn.GetComponentInChildren<TMP_Text>();
+        if (tmpText != null)
+            label = tmpText.text.Trim();
+        else
         {
-            slot.button.interactable = true;
-            slot.button.onClick.RemoveAllListeners();
-            slot.button.onClick.AddListener(() => LoadLevel(slot.levelIndex));
+            Text classicText = btn.GetComponentInChildren<Text>();
+            if (classicText != null)
+                label = classicText.text.Trim();
         }
-        
-        if (slot.lockIcon != null) slot.lockIcon.SetActive(false);
-    }
 
-    public void LoadLevel(int index)
-    {
-        Debug.Log($"Seviye {index} yükleniyor...");
-        SceneManager.LoadScene(index);
+        int levelNum = 1;
+        if (int.TryParse(label, out levelNum))
+        {
+            int unlockedLevel = PlayerPrefs.GetInt("LevelUnlocked", 1);
+            if (levelNum <= unlockedLevel)
+                SceneManager.LoadScene("Level" + levelNum); // veya Build index ile: SceneManager.LoadScene(levelNum);
+        }
     }
 }

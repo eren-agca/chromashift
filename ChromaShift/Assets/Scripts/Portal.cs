@@ -1,33 +1,35 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Portal : MonoBehaviour
 {
-    [Header("Portal Settings")]
-    [Tooltip("Bu portalı kullanmak için anahtar gerekiyor mu?")]
-    public bool requiresKey = false;
-
-    [Tooltip("Bu, oyunu bitiren son portal mı?")]
-    public bool isFinalPortal = false;
-
     private void OnTriggerEnter2D(Collider2D other)
     {
         PlayerController player = other.GetComponent<PlayerController>();
-        if (player == null) return;
+        if (player != null)
+        {
+            // --- ANAHTAR KONTROLÜ ---
+            // SADECE 2. level ve gerekirse diğer level'larda kontrol et
+            var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
-        if (requiresKey && !player.hasKey)
-        {
-            Debug.Log("Key is missing! Cannot use the portal.");
-            return;
-        }
+            // Eğer Level 2 veya anahtar gerektiren başka level ise:
+            if (sceneName == "Level2" || sceneName == "LevelX") // Diğer level isimleri de eklenebilir
+            {
+                if (!player.hasKey)
+                {
+                    Debug.Log("Anahtar yok, portala girilemez!");
+                    return;
+                }
+            }
 
-        if (isFinalPortal)
-        {
-            if (GameManager.Instance != null) GameManager.Instance.GameFinished();
-        }
-        else
-        {
-            if (GameManager.Instance != null) GameManager.Instance.LevelComplete();
+            // Geçiş izni varsa:
+            if (sceneName == "Level3")
+            {
+                GameManager.Instance.GameFinished();
+            }
+            else
+            {
+                GameManager.Instance.LevelComplete();
+            }
         }
     }
 }
