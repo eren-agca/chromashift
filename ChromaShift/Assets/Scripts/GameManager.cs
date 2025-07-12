@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
         if (PlayerPrefs.GetInt("LevelUnlocked", 1) < nextLevelIndex)
         {
             PlayerPrefs.SetInt("LevelUnlocked", nextLevelIndex);
-            PlayerPrefs.Save(); // Burası önemli!
+            PlayerPrefs.Save(); 
         }
 
         if (uiManager != null)
@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
             uiManager.ShowYouDiedPanel();
     }
 
-    // TEST için bir butona bu fonksiyonu bağlayabilirsin:
+    
     public void ResetProgress()
     {
         PlayerPrefs.DeleteKey("LevelUnlocked");

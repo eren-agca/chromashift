@@ -33,7 +33,7 @@ public class LevelSelectManager : MonoBehaviour
                 bool isUnlocked = (levelNum <= unlockedLevel);
                 btn.interactable = isUnlocked;
 
-                // İsmi "lock" (küçük l) içeren tüm image objelerini aç/kapat
+                
                 Image[] childImages = btn.GetComponentsInChildren<Image>(true);
                 foreach (var img in childImages)
                 {
@@ -75,7 +75,7 @@ public class LevelSelectManager : MonoBehaviour
         {
             int unlockedLevel = PlayerPrefs.GetInt("LevelUnlocked", 1);
             if (levelNum <= unlockedLevel)
-                SceneManager.LoadScene("Level" + levelNum); // veya Build index ile: SceneManager.LoadScene(levelNum);
+                SceneManager.LoadScene("Level" + levelNum); 
         }
     }
 }

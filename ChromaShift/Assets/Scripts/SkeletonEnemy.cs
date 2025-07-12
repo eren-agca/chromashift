@@ -6,13 +6,13 @@ public class SkeletonEnemy : MonoBehaviour
     public Transform upLimit;
     public Transform downLimit;
 
-    private int direction = 1; // 1 = yukarı, -1 = aşağı
+    private int direction = 1; 
     private SpriteRenderer spriteRenderer;
 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.color = Color.blue; // iskelet mavi
+        spriteRenderer.color = Color.blue; 
     }
 
     void Update()

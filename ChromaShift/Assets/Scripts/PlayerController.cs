@@ -116,11 +116,11 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    // Sadece Level3'te ölüm paneli göster
+                    
                     if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Level3")
                         GameManager.Instance.GameOver();
                     else
-                        GameManager.Instance.GameOver(); // İstersen farklı panel açabilirsin
+                        GameManager.Instance.GameOver(); 
                 }
             }
         }

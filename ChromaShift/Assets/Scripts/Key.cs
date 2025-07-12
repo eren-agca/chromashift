@@ -9,8 +9,7 @@ public class Key : MonoBehaviour
         {
             player.hasKey = true;
 
-            // Artık UIManager.Instance yerine GameManager üzerinden UI'a ulaşıyoruz.
-            // Bu çok daha güvenli bir yöntem.
+            
             if (UIManager.Instance != null){
                 UIManager.Instance.ShowKeyIcon();
 
